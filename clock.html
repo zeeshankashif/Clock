@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Switchable Clock</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, hsl(0, 0%, 74%), #d2d2d2e2);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .clock-container {
+      margin: 40px 0;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 40px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Analogue Clock */
+    .analogue-clock {
+      width: 200px;
+      height: 200px;
+      border: 9px solid rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      position: relative;
+      background: #202020;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .hand {
+      position: absolute;
+      left: 50%;
+      bottom: 50%;
+      transform-origin: bottom center;
+      border-radius: 50px;
+      transition: transform 0.05s cubic-bezier(0.1, 2.7, 0.58, 1);
+    }
+
+    .hour-hand {
+      width: 9px;
+      height: 50px;
+      background: #7bee00;
+      transform: translateX(-50%);
+    }
+
+    .minute-hand {
+      width: 11px;
+      height: 80px;
+      background: #7bee00;
+      transform: translateX(-50%);
+    }
+
+    .second-hand {
+      width: 3px;
+      height: 90px;
+      background: #dddddd;
+      transform: translateX(-50%);
+      
+    }
+
+    .center-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      background: #ffffff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      box-shadow: 0 0 10px #7bee00;
+    }
+
+    /* Digital Clock */
+    .digital-clock {
+       
+      font-size: 4.5rem;
+      font-weight: bold;
+      letter-spacing: 8px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+      font-family: 'segoe ui black', monospace;
+      
+    }
+
+    .toggle-btn {
+      margin-top: 30px;
+      padding: 14px 32px;
+      font-size: 1.1rem;
+      background: #7bee00;
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4);
+    }
+
+    .toggle-btn:hover {
+      background: #70d900;
+      transform: translateY(-5px);
+    }
+
+    h1 {
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+    }
+
+    .mode-label {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      opacity: 0.8;
+    }
+  </style>
+</head> 
+<body>
+  <h1>LIVE CLOCK</h1>
+  <div class="mode-label" id="mode">A N A L O G U E</div>
+
+  <div class="clock-container">
+    <!-- Analogue Clock -->
+    <div id="analogue" class="analogue-clock">
+      <div class="hand hour-hand" id="hour"></div>
+      <div class="hand minute-hand" id="minute"></div>
+      <div class="hand second-hand" id="second"></div>
+      <div class="center-dot"></div>
+    </div>
+
+    <!-- Digital Clock (hidden by default) -->
+    <div id="digital" class="digital-clock" style="display: none;">
+      <span id="time">00:00:00</span>
+    </div>
+  </div>
+
+  <button class="toggle-btn" id="toggleBtn">Switch to Digital</button>
+
+  <script>
+    const hourHand = document.getElementById('hour');
+    const minuteHand = document.getElementById('minute');
+    const secondHand = document.getElementById('second');
+    
+    const digitalTime = document.getElementById('time');
+    const analogueClock = document.getElementById('analogue');
+    const digitalClock = document.getElementById('digital');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const modeLabel = document.getElementById('mode');
+
+    let isAnalogue = true;
+
+    function updateClock() {
+      const now = new Date();
+
+      // Analogue Clock
+      const seconds = now.getSeconds();
+      const minutes = now.getMinutes();
+      const hours = now.getHours();
+
+      const secondDeg = (seconds * 6);           // 360/60 = 6
+      const minuteDeg = (minutes * 6) + (seconds * 0.1);   // 6 + 0.1 per second
+      const hourDeg = (hours % 12 * 30) + (minutes * 0.5); // 30 + 0.5 per minute
+
+      secondHand.style.transform = `translateX(-50%) rotate(${secondDeg}deg)`;
+      minuteHand.style.transform = `translateX(-50%) rotate(${minuteDeg}deg)`;
+      hourHand.style.transform = `translateX(-50%) rotate(${hourDeg}deg)`;
+
+      // Digital Clock
+      const timeString = now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      });
+      digitalTime.textContent = timeString;
+    }
+
+    // Toggle between analogue and digital
+    toggleBtn.addEventListener('click', () => {
+      isAnalogue = !isAnalogue;
+
+      if (isAnalogue) {
+        analogueClock.style.display = 'block';
+        digitalClock.style.display = 'none';
+        toggleBtn.textContent = 'Switch to Digital';
+        modeLabel.textContent = 'Analogue Mode';
+      } else {
+        analogueClock.style.display = 'none';
+        digitalClock.style.display = 'block';
+        toggleBtn.textContent = 'Switch to Analogue';
+        modeLabel.textContent = 'Digital Mode';
+      }
+    });
+
+    // Update clock every 100ms for smooth second hand
+    setInterval(updateClock, 100);
+
+    // Initial call
+    updateClock();
+  </script>
+</body>
+</html>
